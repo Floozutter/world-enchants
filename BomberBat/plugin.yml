@@ -2,3 +2,8 @@ name: BomberBat
 main: BomberBatPlugin
 version: 0.0.0
 api-version: 1.16
+load: STARTUP
+commands:
+    spawnbomberbat:
+        usage: "/spawnbomberbat"
+        description: "Spawns a BomberBat at the Player's location."
