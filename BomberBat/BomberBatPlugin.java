@@ -40,12 +40,12 @@ public final class BomberBatPlugin extends JavaPlugin {
 		);
 		dataFixers.put(
 			KEY.toString(),
-			dataFixers.get("minecraft:phantom")
+			dataFixers.get("minecraft:bat")
 		);
 		
 		BOMBER_BAT = EntityTypes.Builder.a(
 			EntityBomberBat::new,
-			EnumCreatureType.MONSTER
+			EnumCreatureType.AMBIENT
 		).a(KEY.getKey());
 		IRegistry.a(IRegistry.ENTITY_TYPE, KEY.getKey(), BOMBER_BAT);
 	}
