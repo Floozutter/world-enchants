@@ -1,3 +1,7 @@
+package bomberbat;
+import bomberbat.EntityBomberBat;
+import bomberbat.CommandSpawn;
+
 import net.minecraft.server.v1_16_R1.MinecraftKey;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.DataFixUtils;

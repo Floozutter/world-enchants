@@ -1,3 +1,5 @@
+package bomberbat;
+
 import org.bukkit.Bukkit;
 
 import net.minecraft.server.v1_16_R1.DataWatcherObject;

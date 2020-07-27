@@ -1,3 +1,5 @@
+package bomberbat;
+
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.Command;
