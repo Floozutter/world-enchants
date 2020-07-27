@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.Location;
 import java.util.function.Consumer;
 
+
 public class CommandSpawn implements CommandExecutor {
 	private Consumer<Location> spawner;
 	

@@ -1,4 +1,6 @@
 package bomberbat;
+import bomberbat.Swellable;
+import bomberbat.PathfinderGoalSwellCustom;
 
 import org.bukkit.Bukkit;
 
@@ -19,17 +21,12 @@ import net.minecraft.server.v1_16_R1.EntityAreaEffectCloud;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.minecraft.server.v1_16_R1.PathfinderGoal;
-import net.minecraft.server.v1_16_R1.EntityLiving;
-import net.minecraft.server.v1_16_R1.Entity;
-import java.util.EnumSet;
-
 import net.minecraft.server.v1_16_R1.EntityBat;
 import net.minecraft.server.v1_16_R1.EntityTypes;
 import net.minecraft.server.v1_16_R1.World;
 
 
-public class EntityBomberBat extends EntityBat {
+public class EntityBomberBat extends EntityBat implements Swellable {
 	private static final DataWatcherObject<Integer> DATA_SWELL_DIR = (
 		DataWatcher.a(EntityBomberBat.class, DataWatcherRegistry.b)
 	);
@@ -54,8 +51,13 @@ public class EntityBomberBat extends EntityBat {
 	
     @Override
     protected void initPathfinder() {
-		this.goalSelector.a(2, new PathfinderGoalSwell(this));
-		this.targetSelector.a(1, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, true));
+		this.goalSelector.a(1, new PathfinderGoalSwellCustom(this));
+		this.targetSelector.a(
+			1,
+			new PathfinderGoalNearestAttackableTarget<>(
+				this, EntityHuman.class, true
+			)
+		);
     }
 	
 	@Override
@@ -129,51 +131,6 @@ public class EntityBomberBat extends EntityBat {
 			}
 
 			this.world.addEntity(entityareaeffectcloud);
-		}
-	}
-	
-	static class PathfinderGoalSwell extends PathfinderGoal {
-		private final EntityBomberBat entityBomberBat;
-		private EntityLiving target;
-
-		public PathfinderGoalSwell(EntityBomberBat entityBomberBat) {
-			this.entityBomberBat = entityBomberBat;
-			this.a(EnumSet.of(PathfinderGoal.Type.MOVE));
-		}
-
-		@Override
-		public boolean a() {
-			EntityLiving entityliving = entityBomberBat.getGoalTarget();
-			return (
-				(this.entityBomberBat.getSwellDir() > 0) || (
-					(entityliving != null)
-					&& (this.entityBomberBat.h((Entity) entityliving) < 9.0D)
-				)
-			);
-		}
-
-		@Override
-		public void c() {
-			this.entityBomberBat.getNavigation().o();
-			this.target = entityBomberBat.getGoalTarget();
-		}
-
-		@Override
-		public void d() {
-			this.target = null;
-		}
-
-		@Override
-		public void e() {
-			if (this.target == null) {
-				this.entityBomberBat.setSwellDir(-1);
-			} else if (this.entityBomberBat.h((Entity) this.target) > 49.0D) {
-				this.entityBomberBat.setSwellDir(-1);
-			} else if (!this.entityBomberBat.getEntitySenses().a(this.target)) {
-				this.entityBomberBat.setSwellDir(-1);
-			} else {
-				this.entityBomberBat.setSwellDir(1);
-			}
 		}
 	}
 }
