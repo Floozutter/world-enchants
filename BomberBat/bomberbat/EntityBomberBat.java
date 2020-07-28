@@ -97,7 +97,13 @@ public class EntityBomberBat extends EntityBat implements Swellable {
 	}
 
 	public void setSwellDir(int i) {
+		int old = this.getSwellDir();
 		this.datawatcher.set(EntityBomberBat.DATA_SWELL_DIR, i);
+		if (i > 0 && old < 0) {
+			this.getBukkitEntity().setGlowing(true);
+		} else if (i < 0 && old > 0) {
+			this.getBukkitEntity().setGlowing(false);
+		}
 	}
 	
 	private void explode() {
