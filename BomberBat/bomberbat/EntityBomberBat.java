@@ -4,12 +4,20 @@ import bomberbat.PathfinderGoalSwellCustom;
 
 import org.bukkit.Bukkit;
 
+import net.minecraft.server.v1_16_R1.ControllerMoveFlying;
+
 import net.minecraft.server.v1_16_R1.DataWatcherObject;
 import net.minecraft.server.v1_16_R1.DataWatcher;
 import net.minecraft.server.v1_16_R1.DataWatcherRegistry;
 
 import net.minecraft.server.v1_16_R1.PathfinderGoalNearestAttackableTarget;
 import net.minecraft.server.v1_16_R1.EntityHuman;
+
+import net.minecraft.server.v1_16_R1.GenericAttributes;
+import net.minecraft.server.v1_16_R1.AttributeProvider;
+
+import net.minecraft.server.v1_16_R1.NavigationAbstract;
+import net.minecraft.server.v1_16_R1.NavigationFlying;
 
 import net.minecraft.server.v1_16_R1.SoundEffects;
 
@@ -24,6 +32,13 @@ import java.util.Iterator;
 import net.minecraft.server.v1_16_R1.EntityBat;
 import net.minecraft.server.v1_16_R1.EntityTypes;
 import net.minecraft.server.v1_16_R1.World;
+
+import net.minecraft.server.v1_16_R1.Vec3D;
+import net.minecraft.server.v1_16_R1.PathfinderGoal;
+import net.minecraft.server.v1_16_R1.EntityInsentient;
+import net.minecraft.server.v1_16_R1.EntityLiving;
+import net.minecraft.server.v1_16_R1.EntityPlayer;
+import net.minecraft.server.v1_16_R1.EnumGamemode;
 
 
 public class EntityBomberBat extends EntityBat implements Swellable {
@@ -40,6 +55,9 @@ public class EntityBomberBat extends EntityBat implements Swellable {
 		World world
 	) {
 		super(EntityTypes.BAT, world);
+		//this.getAttributeMap().b(GenericAttributes.FLYING_SPEED).setValue(30);
+		this.getAttributeInstance(GenericAttributes.FOLLOW_RANGE).setValue(30);
+		this.moveController = new ControllerMoveFlying(this, 10, false);  // Copied from EntityParrot.
 		Bukkit.broadcastMessage("Bomber Bat!");
 	}
 	
@@ -52,13 +70,21 @@ public class EntityBomberBat extends EntityBat implements Swellable {
     @Override
     protected void initPathfinder() {
 		this.goalSelector.a(1, new PathfinderGoalSwellCustom(this));
-		this.targetSelector.a(
-			1,
-			new PathfinderGoalNearestAttackableTarget<>(
-				this, EntityHuman.class, true
-			)
-		);
+		this.goalSelector.a(2, new PathfinderGoalBomberBatAttack(this, 5F, 0.8F, 7F));
+		this.targetSelector.a(1, new PathfinderGoalNearestAttackableTarget<>(
+			this, EntityHuman.class, true
+		));
     }
+	
+	@Override
+	protected NavigationAbstract b(World world) {
+		// Copy from EntityParrot.
+		NavigationFlying navigationflying = new NavigationFlying(this, world);
+		navigationflying.a(false);
+		navigationflying.d(true);
+		navigationflying.b(true);
+		return navigationflying;
+	}
 	
 	@Override
 	public void tick() {
@@ -137,6 +163,91 @@ public class EntityBomberBat extends EntityBat implements Swellable {
 			}
 
 			this.world.addEntity(entityareaeffectcloud);
+		}
+	}
+	
+	private static class PathfinderGoalBomberBatAttack extends PathfinderGoal {
+		private final EntityInsentient entity;
+		private final float diveRangeSq;
+		private final float diveSpeed;
+		private final float followSpeed;
+		
+		private EntityLiving target;
+		private int diving;
+		
+		public PathfinderGoalBomberBatAttack(
+			EntityInsentient entity,
+			float diveRange,
+			float diveSpeed,
+			float followSpeed
+			
+		) {
+			this.entity = entity;
+			this.diveRangeSq = diveRange * diveRange;
+			this.diveSpeed = diveSpeed;
+			this.followSpeed = followSpeed;
+		}
+		
+		@Override
+		public boolean a() {
+			return this.b();
+		}
+		
+		@Override
+		public boolean b() {
+			EntityLiving target = this.entity.getGoalTarget();
+			if (target == null || target.dead) {
+				return false;
+			}
+			if (target instanceof EntityPlayer) {
+				final EnumGamemode gm = ((EntityPlayer) target).playerInteractManager.getGameMode();
+				if (!(gm == EnumGamemode.SURVIVAL || gm == EnumGamemode.ADVENTURE)) {
+					return false;
+				}
+			}
+			this.target = target;
+			return true;
+		}
+	
+		@Override
+		public void c() {
+			this.diving = 0;
+			this.target = null;
+		}
+		
+		@Override
+		public void e() {
+			if (this.target == null) { return; }
+			this.diving++;
+			this.entity.getControllerLook().a(this.target, 30f, 30f);
+			this.entity.setNoGravity(true);
+			final double dx = this.target.locX() - this.entity.locX();
+			final double dy = this.target.locY() + this.target.getHeadHeight() - this.entity.locY();
+			final double dz = this.target.locZ() - this.entity.locZ();
+			final double distSq = dx*dx + dy*dy + dz*dz;
+			if (distSq < this.diveRangeSq) {
+				final Vec3D mot = this.entity.getMot();
+				if (this.diving < 18) {
+					// Pre-dive animation.
+					//this.entity.getNavigation().p();
+					this.entity.setMot(0.8*mot.x, 0.05, 0.8*mot.z);
+				} else {
+					// Dive.
+					final double scale = this.diveSpeed * invSqrt(distSq);
+					this.entity.setMot(dx * scale, dy * scale, dz * scale);
+				}
+			} else {
+				// Follow.
+				this.entity.getNavigation().a(this.target, this.followSpeed);
+			}
+		}
+	
+		private static double invSqrt(double x) {
+			final double xhalf = 0.5D * x;
+			final double a = Double.longBitsToDouble(0x5fe6ec85e7de30daL - (Double.doubleToLongBits(x) >> 1));
+			final double b = a * (1.5D - xhalf * a * a);
+			final double c = b * (1.5D - xhalf * b * b);
+			return c;
 		}
 	}
 }
