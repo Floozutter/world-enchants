@@ -20,7 +20,7 @@ public class ControllerMoveFlyingCustom extends ControllerMove {
 			double d2 = this.d - this.a.locZ();
 			double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
-			if (d3 < 2.500000277905201E-7D) {
+			if (false && d3 < 2.500000277905201E-7D) {
 				this.a.r(0.0F);
 				this.a.q(0.0F);
 				return;
@@ -32,9 +32,9 @@ public class ControllerMoveFlyingCustom extends ControllerMove {
 			float f1;
 
 			if (this.a.isOnGround()) {
-				f1 = (float) (this.e * 0);
+				f1 = (float) (this.e * 0.4D);
 			} else {
-				f1 = (float) (this.e * 20);
+				f1 = (float) (this.e * 0.4D);
 			}
 
 			this.a.n(f1);
@@ -45,7 +45,7 @@ public class ControllerMoveFlyingCustom extends ControllerMove {
 			this.a.r(d1 > 0.0D ? f1 : -f1);
 		} else {
 			if (!this.j) {
-				this.a.setNoGravity(false);
+				//this.a.setNoGravity(false);
 			}
 			this.a.r(0.0F);
 			this.a.q(0.0F);

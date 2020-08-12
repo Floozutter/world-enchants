@@ -70,7 +70,7 @@ public class EntityBomberBat extends EntityBat implements Swellable {
     @Override
     protected void initPathfinder() {
 		this.goalSelector.a(1, new PathfinderGoalSwellCustom(this));
-		this.goalSelector.a(2, new PathfinderGoalBomberBatAttack(this, 5F, 0.4F, 7F));
+		this.goalSelector.a(2, new PathfinderGoalBomberBatAttack(this, 5F));
 		this.targetSelector.a(1, new PathfinderGoalNearestAttackableTarget<>(
 			this, EntityHuman.class, true
 		));
@@ -168,25 +168,12 @@ public class EntityBomberBat extends EntityBat implements Swellable {
 	
 	private static class PathfinderGoalBomberBatAttack extends PathfinderGoal {
 		private final EntityInsentient entity;
-		private final float diveRangeSq;
-		private final float diveSpeed;
 		private final float followSpeed;
-		
 		private EntityLiving target;
-		private int diving;
 		
-		public PathfinderGoalBomberBatAttack(
-			EntityInsentient entity,
-			float diveRange,
-			float diveSpeed,
-			float followSpeed
-			
-		) {
+		public PathfinderGoalBomberBatAttack(EntityInsentient entity, float followSpeed) {
 			this.entity = entity;
-			this.diveRangeSq = diveRange * diveRange;
-			this.diveSpeed = diveSpeed;
 			this.followSpeed = followSpeed;
-			this.diving = 0;
 		}
 		
 		@Override
@@ -212,43 +199,15 @@ public class EntityBomberBat extends EntityBat implements Swellable {
 	
 		@Override
 		public void c() {
-			this.diving = 0;
 			this.target = null;
 		}
 		
 		@Override
 		public void e() {
 			if (this.target == null) { return; }
-			this.diving++;
 			this.entity.getControllerLook().a(this.target, 30f, 30f);
 			this.entity.setNoGravity(true);
-			final double dx = this.target.locX() - this.entity.locX();
-			final double dy = this.target.locY() + this.target.getHeadHeight() - this.entity.locY();
-			final double dz = this.target.locZ() - this.entity.locZ();
-			final double distSq = dx*dx + dy*dy + dz*dz;
-			if (distSq < this.diveRangeSq) {
-				final Vec3D mot = this.entity.getMot();
-				if (this.diving < 18) {
-					// Pre-dive animation.
-					//this.entity.getNavigation().p();
-					this.entity.setMot(0.8*mot.x, 0.05, 0.8*mot.z);
-				} else {
-					// Dive.
-					final double scale = this.diveSpeed * invSqrt(distSq);
-					this.entity.setMot(dx * scale, dy * scale, dz * scale);
-				}
-			} else {
-				// Follow.
-				this.entity.getNavigation().a(this.target, this.followSpeed);
-			}
-		}
-	
-		private static double invSqrt(double x) {
-			final double xhalf = 0.5D * x;
-			final double a = Double.longBitsToDouble(0x5fe6ec85e7de30daL - (Double.doubleToLongBits(x) >> 1));
-			final double b = a * (1.5D - xhalf * a * a);
-			final double c = b * (1.5D - xhalf * b * b);
-			return c;
+			this.entity.getNavigation().a(this.target, this.followSpeed);
 		}
 	}
 }
