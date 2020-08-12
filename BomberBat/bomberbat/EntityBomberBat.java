@@ -1,4 +1,5 @@
 package bomberbat;
+import bomberbat.ControllerMoveFlyingCustom;
 import bomberbat.Swellable;
 import bomberbat.PathfinderGoalSwellCustom;
 
@@ -55,9 +56,8 @@ public class EntityBomberBat extends EntityBat implements Swellable {
 		World world
 	) {
 		super(EntityTypes.BAT, world);
-		//this.getAttributeMap().b(GenericAttributes.FLYING_SPEED).setValue(30);
 		this.getAttributeInstance(GenericAttributes.FOLLOW_RANGE).setValue(30);
-		this.moveController = new ControllerMoveFlying(this, 10, false);  // Copied from EntityParrot.
+		this.moveController = new ControllerMoveFlyingCustom(this, 10, false);  // Arguments copied from EntityParrot.
 		Bukkit.broadcastMessage("Bomber Bat!");
 	}
 	
@@ -70,7 +70,7 @@ public class EntityBomberBat extends EntityBat implements Swellable {
     @Override
     protected void initPathfinder() {
 		this.goalSelector.a(1, new PathfinderGoalSwellCustom(this));
-		this.goalSelector.a(2, new PathfinderGoalBomberBatAttack(this, 5F, 0.8F, 7F));
+		this.goalSelector.a(2, new PathfinderGoalBomberBatAttack(this, 5F, 0.4F, 7F));
 		this.targetSelector.a(1, new PathfinderGoalNearestAttackableTarget<>(
 			this, EntityHuman.class, true
 		));
@@ -186,6 +186,7 @@ public class EntityBomberBat extends EntityBat implements Swellable {
 			this.diveRangeSq = diveRange * diveRange;
 			this.diveSpeed = diveSpeed;
 			this.followSpeed = followSpeed;
+			this.diving = 0;
 		}
 		
 		@Override
