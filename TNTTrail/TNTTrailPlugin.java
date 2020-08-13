@@ -1,0 +1,40 @@
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.Command;
+
+public final class TNTTrailPlugin extends JavaPlugin {
+	private boolean on = false;
+	
+	@Override
+	public void onEnable() {
+		getCommand("toggle").setExecutor(new CommandToggle(this));
+	}
+	
+	public boolean toggle() {
+		this.on = !this.on;
+		return this.on;
+	}
+	
+	static private class CommandToggle implements CommandExecutor {
+		private final TNTTrailPlugin plugin;
+		public CommandToggle(TNTTrailPlugin plugin) {
+			this.plugin = plugin;
+		}
+		@Override
+		public boolean onCommand(
+			CommandSender sender,
+			Command command,
+			String label,
+			String[] args
+		) {
+			if (plugin.toggle()) {
+				Bukkit.broadcastMessage("TNTTrail toggled on!");
+			} else {
+				Bukkit.broadcastMessage("TNTTrail toggled off!");
+			}
+			return true;
+		}
+	}
+}

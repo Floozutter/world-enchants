@@ -1,0 +1,8 @@
+name: TNTTrail
+main: TNTTrailPlugin
+version: 0.0.0
+api-version: 1.16
+commands:
+    toggle:
+        usage: "/toggle"
+        description: "Toggles the periodic TNT spawning."
