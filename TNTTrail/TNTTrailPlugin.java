@@ -5,6 +5,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.Command;
 
+
 public final class TNTTrailPlugin extends JavaPlugin {
 	private final int TICKS_PER_SPAWN = 200;
 	private boolean on = false;
