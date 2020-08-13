@@ -1,15 +1,32 @@
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.Command;
 
 public final class TNTTrailPlugin extends JavaPlugin {
+	private final int TICKS_PER_SPAWN = 200;
 	private boolean on = false;
 	
 	@Override
 	public void onEnable() {
 		getCommand("toggle").setExecutor(new CommandToggle(this));
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(
+			this,
+			() -> {
+				if (this.on) {
+					Bukkit.getOnlinePlayers().forEach(player -> {
+						player.getWorld().spawn(
+							player.getLocation(),
+							TNTPrimed.class
+						);
+					});
+				}
+			},
+			0,
+			TICKS_PER_SPAWN
+		);
 	}
 	
 	public boolean toggle() {
